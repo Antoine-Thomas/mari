@@ -962,3 +962,19 @@ I miss you, Micka. I love you, my friend.
 
 - [x] Mickael Thumerel died on December 22, 2024 at the age of 35. He single-handedly developed Démocrite right up to the beta version. I'm taking over, and that's no mean feat.
 - [x] He was my friend, my partner at Nexai.net and Amexio.fr. I'd like to thank Amexio again for giving him all the time he needed to develop Démocrite. During all this time, Mickael was extremely happy.   
+
+
+---
+
+## Adaptations techniques pour Hermes Home Vision
+
+Ce fork a été adapté pour s'intégrer à mon architecture multi-agents locale (Hermes Home Vision) :
+
+- **`MARISerializer.cs`** : Restriction de `TypeNameHandling` (passage de `All` à `Auto`) pour prévenir les vulnérabilités RCE (Insecure Deserialization).
+- **`CustomSerializationBinder.cs`** (Nouveau) : Implémentation d'un `ISerializationBinder` avec allow-list pour contrôler les types désérialisés.
+- **`launch_mari.py`** (Nouveau) : Lancement du bridge en arrière-plan à la demande (`CREATE_NO_WINDOW`) uniquement lors des workflows Talking Head.
+
+### Remerciements
+
+Un grand merci à **[kaonomi-net](https://github.com/kaonomi-net/)** (Jérôme Fortias) pour le développement de MARI. Ce framework basé sur Microsoft Orleans est une base exceptionnelle pour l'orchestration d'agents distribués.
+
