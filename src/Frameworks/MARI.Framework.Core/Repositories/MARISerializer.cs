@@ -70,12 +70,13 @@ namespace MARI.Framework.Core.Repositories
                 Formatting = Formatting.None,
 
                 MissingMemberHandling = MissingMemberHandling.Ignore,
-                SerializationBinder = options.SerializationBinder,
-                Error = options.Error,
-                NullValueHandling = options.NullValueHandling,
-                TraceWriter = options.TraceWriter,
-                //TO-DO from Opus 5.5 Unsafe TypeNameHandling.All deserialization : Newtonsoft deserialization with TypeNameHandling.All, combined with Orleans' permissive binder, lets stored or remote JSON choose any loadable type, a known gadget-based RCE vector. Restrict TypeNameHandling (Auto/Objects) and use an allow-list ISerializationBinder limited to known MARI and Orleans types.
-                TypeNameHandling = TypeNameHandling.All,
+                SerializationBinder = new MARI.Framework.Core.Repositories.CustomSerializationBinder(),
+                                Error = options.Error,
+                                NullValueHandling = options.NullValueHandling,
+                                TraceWriter = options.TraceWriter,
+                                // TypeNameHandling restreint à Auto + allow-list ISerializationBinder
+                                // Empêche la désérialisation de types arbitraires via JSON distant/stocké
+                                TypeNameHandling = TypeNameHandling.Auto,
                 TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Full,
                 ReferenceResolverProvider = options.ReferenceResolverProvider,
                 ReferenceLoopHandling = options.ReferenceLoopHandling,
