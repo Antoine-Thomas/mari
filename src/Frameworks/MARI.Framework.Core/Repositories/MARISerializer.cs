@@ -70,14 +70,19 @@ namespace MARI.Framework.Core.Repositories
                 Formatting = Formatting.None,
 
                 MissingMemberHandling = MissingMemberHandling.Ignore,
-                SerializationBinder = new MARI.Framework.Core.Repositories.CustomSerializationBinder(),
-                                Error = options.Error,
-                                NullValueHandling = options.NullValueHandling,
-                                TraceWriter = options.TraceWriter,
-                                // TypeNameHandling restreint à Auto + allow-list ISerializationBinder
-                                // Empêche la désérialisation de types arbitraires via JSON distant/stocké
-                                TypeNameHandling = TypeNameHandling.Auto,
-                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Full,
+                // Allow-list binder : seuls les types des assemblies MARI/Orleans (et celles
+                // enregistrées via CustomSerializationBinder.AllowAssembly) sont matérialisés.
+                SerializationBinder = new CustomSerializationBinder(),
+                Error = options.Error,
+                NullValueHandling = options.NullValueHandling,
+                TraceWriter = options.TraceWriter,
+                // Objects (et non Auto) : le $type de l'objet RACINE doit rester écrit. Avec Auto,
+                // DeserializeObject(json) rend un JObject et Deserialize<T> lève InvalidCastException.
+                // Objects (et non All) ferme les $type sur tableaux/primitives, vecteur des gadgets.
+                TypeNameHandling = TypeNameHandling.Objects,
+                // Simple : pas de Version/Culture/PublicKeyToken dans $type, donc un payload stocké
+                // survit à un changement d'AssemblyVersion.
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
                 ReferenceResolverProvider = options.ReferenceResolverProvider,
                 ReferenceLoopHandling = options.ReferenceLoopHandling,
                 ObjectCreationHandling = options.ObjectCreationHandling

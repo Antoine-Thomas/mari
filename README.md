@@ -968,13 +968,16 @@ I miss you, Micka. I love you, my friend.
 
 ## Adaptations techniques pour Hermes Home Vision
 
-Ce fork a été adapté pour s'intégrer à mon architecture multi-agents locale (Hermes Home Vision) :
+Ce fork est adapté à mon architecture multi-agents locale (Hermes Home Vision). Deux fichiers diffèrent de l'amont :
 
-- **`MARISerializer.cs`** : Restriction de `TypeNameHandling` (passage de `All` à `Auto`) pour prévenir les vulnérabilités RCE (Insecure Deserialization).
-- **`CustomSerializationBinder.cs`** (Nouveau) : Implémentation d'un `ISerializationBinder` avec allow-list pour contrôler les types désérialisés.
-- **`launch_mari.py`** (Nouveau) : Lancement du bridge en arrière-plan à la demande (`CREATE_NO_WINDOW`) uniquement lors des workflows Talking Head.
+- **`MARISerializer.cs`** : `TypeNameHandling.All` → **`Objects`** (et non `Auto` : avec `Auto`, le `$type` de l'objet racine n'est plus écrit, `DeserializeObject(json)` rend un `JObject` et `Deserialize<T>` lève `InvalidCastException` — mesuré sur .NET 8 / Newtonsoft 13.0.3) + `TypeNameAssemblyFormatHandling.Simple` (`$type` sans `Version`/`Culture`/`PublicKeyToken`, donc un payload stocké survit à un changement d'`AssemblyVersion`).
+- **`CustomSerializationBinder.cs`** (nouveau) : `ISerializationBinder` en allow-list d'assemblies (`MARI.*`, `Orleans.*`, plus `CustomSerializationBinder.AllowAssembly("…")` pour les types Hermes/Bridge). Version/culture/token ignorés à la lecture, résolution quand l'`assemblyName` est absent ; un `$type` hors liste rend `null` → `JsonSerializationException` contrôlée.
+
+Vérifié : `dotnet build` du projet `MARI.Framework.Core` → 0 erreur ; 7 contrôles du binder (round-trip, gadget `System.Diagnostics.Process`, payload versionné, `$type` sans assembly, type BCL) → 7/7.
+
+Le lancement à la demande du bridge (`launch_mari.py`, `CREATE_NO_WINDOW`, sans fenêtre console) vit côté Hermes Home Vision, pas dans ce fork.
 
 ### Remerciements
 
-Un grand merci à **[kaonomi-net](https://github.com/kaonomi-net/)** (Jérôme Fortias) pour le développement de MARI. Ce framework basé sur Microsoft Orleans est une base exceptionnelle pour l'orchestration d'agents distribués.
+Un grand merci à **[kaonomi-net](https://github.com/kaonomi-net/)** (Jérôme Fortias) pour le développement de MARI, publié sous licence MIT. Ce framework basé sur Microsoft Orleans est une base exceptionnelle pour l'orchestration d'agents distribués.
 
